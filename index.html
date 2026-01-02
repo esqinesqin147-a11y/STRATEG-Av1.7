@@ -51,4 +51,24 @@
             <button class="sel-btn active" onclick="setLang('az', this)">AZƏRBAYCAN</button>
             <button class="sel-btn" onclick="setLang('en', this)">ENGLISH</button>
         </div>
-        
+                <div class="sel-group">
+            <p id="m-gen">GENERAL</p>
+            <button class="sel-btn active" id="g0" onclick="setG(0, this)">İQTİSADÇI</button>
+            <button class="sel-btn" id="g1" onclick="setG(1, this)">HƏRBÇİ</button>
+            <button class="sel-btn" id="g2" onclick="setG(2, this)">ALİM</button>
+        </div>
+        <div class="sel-group">
+            <p id="m-diff">ÇƏTİNLİK / DIFFICULTY</p>
+            <button class="sel-btn" id="d0" onclick="setD(0, this)">EASY</button>
+            <button class="sel-btn active" id="d1" onclick="setD(1, this)">NORMAL</button>
+            <button class="sel-btn" id="d2" onclick="setD(2, this)">HARD</button>
+        </div>
+                <button id="m-start" onclick="start()" style="background:var(--green); padding: 15px 60px; font-size: 18px; font-weight: bold; border-radius: 50px;">BAŞLA</button>
+    </div>
+
+    <div id="header">
+        <div class="stat"><span id="l-gold">QIZIL</span> <span id="gold">0</span></div>
+        <div class="stat"><span id="l-army">ORDU</span> <span id="army">0</span></div>
+        <div class="stat"><span id="l-ships">GƏMİ</span> <span id="ships">0</span></div>
+        <div class="stat"><span id="l-timer">ZAMAN</span> <span id="timer">∞</span></div>
+    </div>
