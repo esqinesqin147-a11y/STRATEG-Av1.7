@@ -72,3 +72,151 @@
         <div class="stat"><span id="l-ships">GƏMİ</span> <span id="ships">0</span></div>
         <div class="stat"><span id="l-timer">ZAMAN</span> <span id="timer">∞</span></div>
     </div>
+    <div id="mapContainer"></div>
+
+    <div id="controls">
+        <button id="b-inf" onclick="buy(1)">PİYADA (30$)</button>
+        <button id="b-tnk" onclick="buy(2)">TANK (150$)</button>
+        <button id="b-ult" class="btn-ult" onclick="useLegendary()">GÜC: HAZIR</button>
+        <button id="b-pln" onclick="buy(4)">TƏYYARƏ (600$)</button>
+        <button id="b-shp" onclick="buy(3)" style="background:var(--blue)">GƏMİ (1000$)</button>
+        <button id="b-atk" class="btn-atk" onclick="attack()">HÜCUM ET</button>
+    </div>
+        <div id="end-screen">
+        <div id="result-msg"></div>
+        <button id="b-reset" onclick="location.reload()" style="margin-top:30px; background:var(--blue); padding:15px 40px; border:none; color:white; font-weight:bold; border-radius:5px;">YENİDƏN BAŞLA</button>
+    </div>
+
+<script>
+    let gold = 300, army = 50, ships = 0, provs = 1, diff = 1, gen = 0, time = 90, active = false, selected = null, lang = 'az';
+    let isAttacking = false, indCount = 0, ultUsed = false, ultActive = false;
+        const UI = {
+        az: {gold:"QIZIL", army:"ORDU", ships:"GƏMİ", timer:"ZAMAN", inf:"PİYADA", tnk:"TANK", shp:"GƏMİ", pln:"TƏYYARƏ", atk:"HÜCUM ET", g0:"İQTİSADÇI", g1:"HƏRBÇİ", g2:"ALİM", win:"LEGENDARY VICTORY!", lose:"MƏĞLUBİYYƏT", reset:"YENİDƏN BAŞLA", navy:"GƏMİ LAZIMDIR!", ultUsed:"GÜC: TÜKƏNDİ", ult0:"İNFLYASİYA (10s)", ult1:"İLDİRİM HÜCUMU", ult2:"ZAMAN STOP (5s)"},
+                    en: {gold:"GOLD", army:"ARMY", ships:"SHIPS", timer:"TIMER", inf:"INFANTRY", tnk:"TANK", shp:"SHIP", pln:"PLANE", atk:"ATTACK", g0:"ECONOMIST", g1:"SOLDIER", g2:"SCIENTIST", win:"LEGENDARY VICTORY!", lose:"DEFEAT", reset:"REBOOT", navy:"NEED NAVY!", ultUsed:"POWER: DEPLETED", ult0:"INFLATION (10s)", ult1:"BLITZKRIEG", ult2:"TIME STOP (5s)"}
+    };
+        function setLang(l, b) { 
+        lang = l; 
+        b.parentNode.querySelectorAll('.sel-btn').forEach(x => x.classList.remove('active')); 
+        b.classList.add('active'); 
+        updateMenuText();
+        if(active) updateGameText();
+        }
+        function updateMenuText() {
+        const t = UI[lang];
+        document.getElementById('m-start').innerText = lang === 'az' ? "BAŞLA" : "LAUNCH";
+        document.getElementById('g0').innerText = t.g0;
+        document.getElementById('g1').innerText = t.g1;
+        document.getElementById('g2').innerText = t.g2;
+        }
+        function setG(v, b) { gen = v; b.parentNode.querySelectorAll('.sel-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+    function setD(v, b) { diff = v; b.parentNode.querySelectorAll('.sel-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+
+    function start() {
+        document.getElementById('menu').style.display = 'none'; active = true;
+        if(diff === 0) gold = 500;
+        if(diff === 2) time = 90;
+                const cont = document.getElementById('mapContainer');
+        for(let i=0; i<16; i++) {
+            let d = document.createElement('div');
+            let isWater = (i === 3 || i === 7 || i === 12);
+            let type = (i !== 0 && !isWater) ? (Math.random() < 0.25 ? "industrial" : (Math.random() < 0.5 ? "military" : "standard")) : "standard";
+            d.className = 'tile ' + (i===0 ? 'player' : (isWater ? 'enemy water' : 'enemy')) + ' fog-of-war';
+            d.dataset.index = i; d.dataset.type = type; d.dataset.water = isWater;
+                let icon = type === "industrial" ? "💰" : (type === "military" ? "🎖️" : (isWater ? "⚓" : ""));
+            d.innerHTML = `<span class='type-icon'>${icon}</span>` + (i===0 ? "HQ" : (isWater ? "ZONE" : "ZONE"));
+            d.onclick = () => { if(!
+                                   d.classList.contains('fog-of-war')) { document.querySelectorAll('.tile').forEach(x => x.classList.remove('selected')); d.classList.add('selected'); selected = d; } };
+            cont.appendChild(d);
+        }
+        updateFog(); updateGameText(); setInterval(tick, 1000); setInterval(chaosEvent, 15000);
+            }
+        function updateFog() {
+        const tiles = document.querySelectorAll('.tile');
+        const owned = Array.from(tiles).filter(t => t.classList.contains('player')).map(t => parseInt(t.dataset.index));
+        tiles.forEach(tile => {
+            let idx = parseInt(tile.dataset.index);
+            let isAdj = owned.some(o => {
+                let r1 = Math.floor(o/4), c1 = o%4, r2 =
+                    Math.floor(idx/4), c2 = idx%4;
+                return Math.abs(r1-r2) + Math.abs(c1-c2) === 1;
+            });
+            if(owned.includes(idx) || isAdj) tile.classList.remove('fog-of-war');
+            else tile.classList.add('fog-of-war');
+        });
+                        }
+        function useLegendary() {
+        if(ultUsed || !active) return;
+        ultUsed = true; ultActive = true;
+        document.getElementById('b-ult').innerText = UI[lang].ultUsed;
+        if(gen === 0) setTimeout(() => { ultActive = false; }, 10000);
+        else if(gen === 1) {} 
+        else if(gen === 2) setTimeout(() => { ultActive = false; }, 5000);
+        }
+        function attack() {
+        if(!active || isAttacking || !selected || selected.classList.contains('player')) return;
+        if(selected.dataset.water === "true" && ships < 1) { alert(UI[lang].navy); return; }
+        isAttacking = true;
+        let pwr = army + (gen === 2 ? 100 : 0);
+                    let multiplier = (diff === 2) ? 2.5 : 1;
+        let req = ( (diff === 0 ? 80 : (diff === 1 ? 120 : 250)) + (provs * 150) ) * multiplier;
+        if(ultActive && gen === 1) { req = 0; ultActive = false; }
+        if(pwr >= req) {
+            army -= Math.floor(req/4); provs++;
+                       if(selected.dataset.type === "industrial") indCount++;
+            if(selected.dataset.type === "military") army += 100;
+            selected.className = 'tile player'; selected.innerHTML = "OK";
+            updateFog(); if(provs === 16) showEnd(true);
+            isAttacking = false;
+        } else { 
+           document.body.classList.add('shake-anim', 'flash-red');
+            setTimeout(() => { document.body.classList.remove('shake-anim', 'flash-red'); isAttacking = false; }, 200);
+        }
+        updateUI();
+        }
+        function tick() {
+        if(!active) return;
+        let goldMult = (ultActive && gen === 0) ? 2.5 : 1;
+        gold += (provs * (gen === 0 ? 15 : 8) + (ships * 40) + (indCount * 25)) * goldMult;
+        if(!(ultActive && gen === 2) && diff > 0) {
+            time--; document.getElementById('timer').innerText = time + "s";
+            if(time <= 0) showEnd(false);
+        } updateUI();
+        }
+        function buy(t) {
+        let cost = [0, 30, 150, 1000, 600][t]; if(gen === 1) cost *= 0.70;
+        if(gold >= cost) {
+            gold -= cost; if(t===1) army += 20; if(t===2) army += 110; if(t===3) ships += 1; if(t===4) army += 450;
+        } updateUI();
+        }
+        function chaosEvent() {
+        if(!active || (ultActive && gen === 2)) return;
+        if(Math.random() < (diff === 2 ? 0.5 : 0.2)) {
+            let owned = document.querySelectorAll('.tile.player:not([data-index="0"])');
+            if(owned.length > 0) {
+                let target = owned[Math.floor(Math.random()*owned.length)];
+                                target.className = 'tile enemy'; target.innerHTML = "REBEL"; provs--;
+                if(target.dataset.type === "industrial") indCount--;
+                updateFog();
+            }
+        }
+    }
+        function updateUI() {
+        document.getElementById('gold').innerText = Math.floor(gold);
+        document.getElementById('army').innerText = army;
+        document.getElementById('ships').innerText = ships;
+                    }
+        document.getElementById('l-timer').innerText = t.timer;
+        document.getElementById('b-inf').innerText = t.inf + " (30$)"; 
+        document.getElementById('b-tnk').innerText = t.tnk + " (150$)";
+            document.getElementById('b-shp').innerText = t.shp + " (1000$)"; document.getElementById('b-pln').innerText = t.pln + " (600$)";
+        document.getElementById('b-atk').innerText = t.atk; document.getElementById('b-reset').innerText = t.reset;
+        if(!ultUsed) document.getElementById('b-ult').innerText = t["ult"+gen];
+    }
+        function showEnd(isWin) {
+        active = false; document.getElementById('end-screen').style.display = 'flex';
+        document.getElementById('result-msg').innerText = isWin ? UI[lang].win : UI[lang].lose;
+        document.getElementById('result-msg').className = isWin ? "victory-text" : "defeat-text";
+    }
+</script>
+</body>
+</html>
