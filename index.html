@@ -31,4 +31,24 @@
         #controls { background: #0f172a; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--blue); }
         button { padding: 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 10px; background: #334155; transition: 0.2s; }
         .btn-atk { background: var(--red); grid-column: span 2; font-size: 13px; }
-          
+                  .btn-ult { background: #7c3aed; grid-column: span 2; font-size: 12px; border: 2px solid #a78bfa; box-shadow: 0 0 10px #7c3aed; }
+
+        #end-screen { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); background: rgba(0,0,0,0.85); text-align: center; }
+        .victory-text { color: var(--green); font-size: 35px; text-shadow: 0 0 20px var(--green); }
+        .defeat-text { color: var(--red); font-size: 30px; text-shadow: 0 0 20px var(--red); }
+                                    #menu { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .sel-group { margin-bottom: 15px; width: 100%; text-align: center; }
+        .sel-btn { padding: 8px; margin: 3px; background: #1e293b; border: 1px solid var(--blue); color: white; width: 90px; font-size: 9px; }
+        .active { background: var(--blue); box-shadow: 0 0 10px var(--blue); border-color: white; }
+    </style>
+    </head>
+<body id="mainBody">
+
+    <div id="menu">
+        <h1 class="glitch">STRATEGIA v1.7.1</h1>
+        <div class="sel-group">
+            <p id="m-lang">DİL / LANGUAGE</p>
+            <button class="sel-btn active" onclick="setLang('az', this)">AZƏRBAYCAN</button>
+            <button class="sel-btn" onclick="setLang('en', this)">ENGLISH</button>
+        </div>
+        
